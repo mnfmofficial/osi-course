@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#111111"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <title>OSI — Practical Security Course</title>
+  <link rel="manifest" href="./manifest.json"/>
+  <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+  <style>
+    :root{
+      --bg:#111111;--s1:#181818;--s2:#202020;--s3:#282828;
+      --border:#2a2a2a;--text:#cccccc;--dim:#666;--faint:#2e2e2e;
+      --amber:#c8a96e;--blue:#6a9ec8;--green:#6abf7a;--red:#c86a6a;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{font-family:'Georgia','Times New Roman',serif;background:var(--bg);color:var(--text);min-height:100dvh;line-height:1.7;padding-bottom:20px}
+    .topbar{position:sticky;top:0;z-index:200;background:var(--bg);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;justify-content:space-between}
+    .topbar-title{font-family:'Courier New',monospace;font-size:.75em;letter-spacing:.15em;text-transform:uppercase;color:var(--amber)}
+    .topbar-prog{font-family:'Courier New',monospace;font-size:.7em;color:var(--dim)}
+    .topbar-prog span{color:var(--amber)}
+    .layer-nav{display:flex;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;background:var(--s1)}
+    .layer-nav::-webkit-scrollbar{display:none}
+    .lbtn{flex-shrink:0;padding:10px 13px;font-family:'Courier New',monospace;font-size:.7em;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;border-top:none;border-left:none;border-right:1px solid var(--border);background:none;display:flex;flex-direction:column;align-items:center;gap:2px;user-select:none;transition:color .2s}
+    .lbtn .ln{font-size:.6em;opacity:.4}
+    .lbtn.active{color:var(--amber);border-bottom-color:var(--amber);background:var(--bg)}
+    .lbtn.done .lname::after{content:' ✓';color:var(--green)}
+    .lbtn.final-btn{border-left:1px solid var(--border)}
+    .lbtn.final-btn.done .lname::after{content:' ✓';color:var(--amber)}
+    .content{max-width:640px;margin:0 auto;padding:22px 18px 30px}
+    .layer-hdr{display:flex;align-items:flex-start;gap:14px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+    .lnum{font-family:'Courier New',monospace;font-size:2.6em;font-weight:700;color:var(--faint);line-height:1;flex-shrink:0}
+    .ltitle h2{font-size:1.4em;font-weight:700;color:var(--text)}
+    .ltitle .lsub{font-family:'Courier New',monospace;font-size:.7em;color:var(--dim);margin-top:3px;letter-spacing:.06em;text-transform:uppercase}
+    .tab-strip{display:flex;border-bottom:1px solid var(--border);margin-bottom:22px;overflow-x:auto;scrollbar-width:none}
+    .tab-strip::-webkit-scrollbar{display:none}
+    .tbtn{padding:9px 15px;font-family:'Courier New',monospace;font-size:.7em;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;border-top:none;border-left:none;border-right:none;background:none;white-space:nowrap;flex-shrink:0;transition:color .2s}
+    .tbtn.active{color:var(--amber);border-bottom-color:var(--amber)}
+    .slabel{font-family:'Courier New',monospace;font-size:.68em;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:10px;display:block}
+    .prose p{margin-bottom:1em;font-size:.92em}.prose p:last-child{margin-bottom:0}
+    .prose strong{color:#e0e0e0}
+    .prose-blk{margin-bottom:26px}
+    .analogy-box{border-left:3px solid var(--amber);padding:14px 16px;background:var(--s1);margin-bottom:26px}
+    .acard{border:1px solid var(--border);background:var(--s1);margin-bottom:11px}
+    .acard-name{padding:9px 13px;font-family:'Courier New',monospace;font-size:.76em;font-weight:700;color:var(--red);letter-spacing:.05em;border-bottom:1px solid var(--border);background:var(--s2)}
+    .acard-desc{padding:11px 13px;font-size:.86em;line-height:1.65}
+    .acard-tool{padding:5px 13px 10px;font-family:'Courier New',monospace;font-size:.68em;color:var(--dim)}
+    .acard-tool span{color:var(--blue)}
+    .step{margin-bottom:16px}
+    .step-n{font-family:'Courier New',monospace;font-size:.67em;color:var(--dim);margin-bottom:4px;letter-spacing:.05em;text-transform:uppercase}
+    .step-d{font-size:.87em;margin-bottom:8px}
+    .cmd{background:var(--s2);border:1px solid var(--border);padding:10px 13px;font-family:'Courier New',monospace;font-size:.79em;color:var(--green);overflow-x:auto;white-space:pre;line-height:1.5}
+    .note{border:1px solid var(--border);border-left:3px solid var(--blue);padding:11px 13px;background:var(--s1);font-size:.83em;margin-top:16px;color:var(--dim);line-height:1.6}
+    .note strong{color:var(--blue)}
+    .qintro{font-family:'Courier New',monospace;font-size:.72em;color:var(--dim);margin-bottom:20px;letter-spacing:.03em;line-height:1.6}
+    .qblk{margin-bottom:16px;border:1px solid var(--border);background:var(--s1)}
+    .qtxt{font-size:.9em;padding:13px 14px 0;font-weight:600;line-height:1.55}
+    .qnum{font-family:'Courier New',monospace;font-size:.65em;color:var(--dim);display:block;margin-bottom:4px}
+    .opts{display:flex;flex-direction:column;padding:10px 14px 14px;gap:0}
+    .opt{display:flex;align-items:flex-start;gap:10px;padding:9px 11px;margin-bottom:6px;background:var(--s2);border:1px solid var(--border);cursor:pointer;font-size:.84em;transition:all .15s;user-select:none;line-height:1.45}
+    .opt:last-child{margin-bottom:0}
+    .opt:active{background:var(--s3)}
+    .opt.selected{border-color:var(--amber);background:rgba(200,169,110,.08)}
+    .opt.correct{border-color:var(--green);background:rgba(106,191,122,.1);color:var(--green)}
+    .opt.wrong{border-color:var(--red);background:rgba(200,106,106,.08);color:var(--red);opacity:.7}
+    .opt-lt{font-family:'Courier New',monospace;font-size:.7em;color:var(--dim);flex-shrink:0;width:14px;padding-top:1px}
+    .opt-explain{display:none;font-size:.75em;font-family:'Courier New',monospace;color:var(--dim);margin-top:4px;line-height:1.5}
+    .opt-explain.show{display:block}
+    .opt.correct .opt-explain{color:rgba(106,191,122,.75)}
+    .opt.wrong .opt-explain{color:rgba(200,106,106,.65)}
+    .q-explain{display:none;margin:0 14px 14px;padding:11px 13px;background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--amber);font-size:.82em;line-height:1.65;color:var(--dim)}
+    .q-explain.show{display:block}
+    .q-explain strong{color:var(--amber);display:block;margin-bottom:4px;font-family:'Courier New',monospace;font-size:.85em;letter-spacing:.04em}
+    .qfoot{display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:10px}
+    .sdisplay{font-family:'Courier New',monospace;font-size:.82em;color:var(--dim)}
+    .sdisplay span{color:var(--amber);font-size:1.15em}
+    .btn{padding:10px 20px;border:1px solid var(--border);background:var(--s1);color:var(--text);font-family:'Courier New',monospace;font-size:.73em;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:background .15s}
+    .btn:active{background:var(--s2)}.btn:disabled{opacity:.3;cursor:default}
+    .btn-amber{background:var(--amber);color:var(--bg);border-color:var(--amber);font-weight:700}
+    .btn-amber:active{opacity:.85}
+    .cbanner{display:none;padding:13px 15px;font-family:'Courier New',monospace;font-size:.76em;margin-top:10px;line-height:1.65;border:1px solid}
+    .cbanner.show{display:block}
+    .cbanner.good{border-color:var(--green);color:var(--green);background:rgba(106,191,122,.06)}
+    .cbanner.mid{border-color:var(--amber);color:var(--amber);background:rgba(200,169,110,.06)}
+    .cbanner.low{border-color:var(--red);color:var(--red);background:rgba(200,106,106,.06)}
+    .navfoot{display:flex;justify-content:space-between;gap:10px;margin-top:26px;padding-top:16px;border-top:1px solid var(--border)}
+    .home-hdr{margin-bottom:22px}
+    .home-hdr h1{font-size:1.4em;font-weight:700;margin-bottom:6px}
+    .home-hdr p{font-size:.85em;color:var(--dim);line-height:1.65}
+    .prow{display:flex;align-items:center;gap:12px;margin-top:14px}
+    .bar-o{flex:1;height:4px;background:var(--faint)}
+    .bar-i{height:100%;background:var(--amber);transition:width .4s}
+    .blabel{font-family:'Courier New',monospace;font-size:.7em;color:var(--dim);white-space:nowrap}
+    .blabel span{color:var(--amber)}
+    .hgrid{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+    .hcard{border:1px solid var(--border);background:var(--s1);padding:15px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:background .15s}
+    .hcard:active{background:var(--s2)}.hcard.done{border-color:var(--faint)}
+    .hcard.final{border-color:var(--amber);border-style:dashed}
+    .hcard.final.done{border-style:solid;border-color:var(--faint)}
+    .hcnum{font-family:'Courier New',monospace;font-size:2em;color:var(--faint);font-weight:700;flex-shrink:0;width:36px;text-align:center}
+    .hcard.done .hcnum{color:var(--green)}
+    .hcard.final .hcnum{color:var(--amber);font-size:1.2em}
+    .hcard.final.done .hcnum{color:var(--green)}
+    .hcbody h3{font-size:.92em;color:var(--text);margin-bottom:2px}
+    .hcbody p{font-family:'Courier New',monospace;font-size:.67em;color:var(--dim);letter-spacing:.03em}
+    .hcstat{margin-left:auto;font-family:'Courier New',monospace;font-size:.7em;color:var(--dim);flex-shrink:0}
+    .hcard.done .hcstat{color:var(--green)}
+    .final-hdr{border:1px solid var(--amber);padding:16px;margin-bottom:20px;background:rgba(200,169,110,.04)}
+    .final-hdr h2{font-size:1.2em;margin-bottom:6px}
+    .final-hdr p{font-size:.84em;color:var(--dim);line-height:1.65}
+    .layer-tag{display:inline-block;font-family:'Courier New',monospace;font-size:.65em;padding:3px 8px 3px 14px;border:1px solid var(--faint);color:var(--amber);margin:10px 0 0;letter-spacing:.04em}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-title">OSI — Practical Security</div>
+  <div class="topbar-prog"><span id="tp-done">0</span>/7 complete</div>
+</div>
+<div class="layer-nav" id="layer-nav"></div>
+<div class="content" id="main-content"></div>
+<script>
+
+const LAYERS=[
+{id:1,name:'Physical',protocols:'Cables · Hubs · NICs · Signals',
+ ov:['The Physical layer is the foundation of the OSI model. It defines the hardware means of transmitting raw bits across a physical medium. At this layer data has no meaning, address, or structure. It is simply ones and zeros moving from point A to point B.',
+     'Key components: NICs, copper and fibre optic cables, hubs, repeaters, and modems. The hub is the defining Layer 1 device — it receives a signal and broadcasts it identically out every port. No filtering, no intelligence. This is why hubs were replaced by Layer 2 switches.',
+     'Key concepts: bit rate, bandwidth, attenuation (signal degradation over distance), and duplex — half-duplex shares the medium one direction at a time; full-duplex allows simultaneous send and receive.'],
+ analogy:'The Physical layer is the road network. Data is the vehicle, but Layer 1 only concerns itself with the road surface. Whether a motorway or a dirt track, whether one car or a thousand — that is Layer 1. The road has no knowledge of what the vehicles carry.',
+ attacks:[
+   {n:'Physical Access Attack',d:'An attacker with physical access can plant rogue devices, tap cables, or install hardware keyloggers before any software can intercept. No firewall or encryption protects against this. Physical security is Layer 1 security.',t:'Hardware keyloggers, LAN Turtles, rogue switch ports'},
+   {n:'Rubber Ducky / BadUSB',d:'A malicious USB presenting itself as a keyboard. The moment plugged in, it executes a pre-programmed payload at keystroke speed. The OS trusts it completely — it announces itself as a HID device and the kernel obliges.',t:'USB Rubber Ducky, OMG Cable, custom HID payloads'},
+   {n:'Wiretapping',d:'Physically intercepting signals from a cable. Copper Ethernet cables can be tapped with inductive clips; fibre requires bend couplers. Wireless frequencies are passively receivable by any antenna within range.',t:'Passive sniffing, inductive taps, SDR'},
+   {n:'RF Jamming',d:'Flooding a wireless frequency with noise to deny service. WiFi, Bluetooth, and GPS are all susceptible. A jammer does not break encryption — it renders the medium unusable.',t:'RF jamming hardware (controlled environments only)'}
+ ],
+ practical:[
+   {s:'List all network interfaces on your system.',c:'ip link show'},
+   {s:'Inspect a specific interface — state and MAC address.',c:'ip link show eth0'},
+   {s:'View detailed NIC information including driver, speed, and duplex.',c:'ethtool eth0
+# Replace eth0 with your actual interface name'},
+   {s:'Generate Layer 1 traffic and watch your NIC activity LED.',c:'ping -c 20 8.8.8.8'},
+   {s:'Open a Wireshark capture. Every frame entered through Layer 1.',c:'# Wireshark: Capture → your interface → Start
+# No filter — observe raw frame volume',n:'Layer 1 itself is invisible to software. Wireshark shows Layer 2 and above — you are seeing the output of Layer 1.'}
+ ],
+ quiz:[
+   {q:'Which device operates purely at the Physical layer, broadcasting signals out of every port with no filtering?',
+    o:['Switch','Router','Hub','Firewall'],a:2,
+    ex:'A hub has no concept of addresses. It receives a signal and blindly retransmits it out every port. A switch reads MAC addresses (Layer 2), a router reads IP addresses (Layer 3), and a firewall inspects at Layer 3 and above.',
+    oe:['Switches read MAC addresses — Layer 2 intelligence.','Routers read IP addresses and make routing decisions — Layer 3.','Correct. A hub retransmits every signal out every port with no filtering whatsoever.','Firewalls inspect and filter at Layer 3 and above.']},
+   {q:'What is the unit of data at the Physical layer?',
+    o:['Frame','Packet','Segment','Bit'],a:3,
+    ex:'Layer 1 = Bit. Layer 2 = Frame. Layer 3 = Packet. Layer 4 = Segment. Understanding this encapsulation hierarchy is fundamental to networking and security.',
+    oe:['Frames belong to Layer 2 — the Data Link layer.','Packets belong to Layer 3 — the Network layer.','Segments belong to Layer 4 — the Transport layer.','Correct. The Physical layer deals exclusively in raw bits — ones and zeros.']},
+   {q:'A hardware keylogger planted inside a keyboard exploits trust at which layer?',
+    o:['Layer 3 — Network','Layer 7 — Application','Layer 1 — Physical','Layer 4 — Transport'],a:2,
+    ex:'A hardware keylogger is a physical device. It intercepts signals before the OS ever sees them. No software-level security — not firewalls, not antivirus, not encryption — can detect or prevent hardware interception.',
+    oe:['Layer 3 is IP routing — no software layer stops a hardware implant.','Layer 7 is the application layer — keyloggers operate far below that.','Correct. Hardware implants operate at the physical level, below all software security controls.','Layer 4 is TCP/UDP — irrelevant to physical hardware interception.']},
+   {q:'What does a repeater do at Layer 1?',
+    o:['Filters traffic by MAC address','Routes packets between networks','Regenerates and amplifies the signal','Encrypts transmitted data'],a:2,
+    ex:'A repeater receives a weakened signal and retransmits it at full strength — extending physical reach. It has no concept of addresses or content. MAC filtering is Layer 2, routing is Layer 3, encryption is Layer 6.',
+    oe:['MAC filtering is a Layer 2 switch function — repeaters have no address awareness.','Routing is a Layer 3 function.','Correct. A repeater amplifies and regenerates the signal to overcome attenuation.','Encryption is a Layer 6 function.']},
+   {q:'What is attenuation in networking?',
+    o:['The process of encrypting data before transmission','A type of physical network topology','The degradation of signal strength over distance','Interference from external electromagnetic sources'],a:2,
+    ex:'Attenuation is the loss of signal energy as it travels through a medium. Every cable has a maximum length (100m for Cat5e) beyond which the signal degrades too much to be reliably interpreted. Repeaters combat attenuation by regenerating the signal.',
+    oe:['Encryption is a Layer 6 function, not a physical signal phenomenon.','Topologies describe layout — not signal behaviour.','Correct. Attenuation is signal strength degradation over distance — fundamental to understanding cable length limits.','EMI is interference from external sources — attenuation is specifically distance-based signal loss.']},
+   {q:'Which cable type is immune to electromagnetic interference (EMI)?',
+    o:['Cat5e','Cat6','Coaxial','Fibre optic'],a:3,
+    ex:'Fibre optic transmits light rather than electrical signals. Light pulses are unaffected by electromagnetic interference, making fibre ideal for high-interference environments and long distances. All copper cables — Cat5e, Cat6, coaxial — are susceptible to EMI.',
+    oe:['Cat5e is copper — susceptible to EMI and limited to 100m.','Cat6 is also copper and EMI-susceptible, though with better shielding.','Coaxial is copper-based and subject to EMI.','Correct. Fibre optic transmits light, not electricity — completely immune to EMI.']},
+   {q:'What does full-duplex communication mean?',
+    o:['Only one device can transmit at a time','Data travels in one direction only','Simultaneous transmission and reception on the same link','Multiple signals multiplexed on a single cable'],a:2,
+    ex:'Full-duplex allows a device to transmit and receive simultaneously — like a phone call where both parties can speak at once. Half-duplex only allows one direction at a time, like a walkie-talkie. Modern switched Ethernet is almost always full-duplex.',
+    oe:['One device at a time describes half-duplex or CSMA/CD on shared media.','One-directional flow is simplex — not duplex.','Correct. Full-duplex means both parties can send and receive simultaneously on the same link.','Signal multiplexing is a separate concept related to frequency or time division sharing.']},
+   {q:'A BadUSB attack works by presenting the device as which type of hardware?',
+    o:['A storage drive requiring drivers','A human interface device — specifically a keyboard','A network adapter for passive sniffing','A power delivery device that corrupts firmware'],a:1,
+    ex:'BadUSB and Rubber Ducky attacks present the USB device as a HID — specifically a keyboard. Operating systems automatically trust keyboards and execute keystrokes without user confirmation. The payload types commands at machine speed. No antivirus catches it — it is not malware, it is a keyboard.',
+    oe:['Storage drives prompt for interaction and do not auto-execute payloads.','Correct. HID keyboards are trusted implicitly by every OS — the payload executes as if a human typed it.','Network adapters require driver setup and do not auto-execute code when plugged in.','Firmware attacks exist but BadUSB specifically exploits HID trust, not power delivery.']},
+   {q:'What does "ip link show" reveal on a Linux system?',
+    o:['Active TCP connections and ports','The routing table and default gateway','Network interfaces, their state, and MAC addresses','DNS resolver configuration'],a:2,
+    ex:'ip link show lists all network interfaces — physical (eth0, wlan0), virtual (lo, tun0) — along with their state (UP or DOWN), MAC address, and MTU. It is the first command to run to understand what connections a machine has. The modern replacement for ifconfig.',
+    oe:['Active TCP connections are shown by ss -tn, not ip link.','The routing table is shown by ip route show.','Correct. ip link show displays all interfaces, their up/down state, MAC addresses, and MTU.','DNS configuration is in /etc/resolv.conf — not shown by ip link.']}
+ ]},
+
+{id:2,name:'Data Link',protocols:'Ethernet · ARP · MAC · Switches',
+ ov:['The Data Link layer organises raw bits into frames and introduces hardware addressing via MAC addresses. Every NIC has a unique 48-bit MAC address — though software can override it (MAC spoofing).',
+     'Two sub-layers: MAC handles addressing and medium access; LLC provides error detection and flow control. Switches maintain a CAM table mapping MAC addresses to ports, forwarding frames only to the correct destination.',
+     'ARP bridges Layer 2 and 3. When a host knows an IP but not the MAC, it broadcasts an ARP request. The owner replies with its MAC. This mapping is cached in the ARP table — and can be poisoned.'],
+ analogy:'Layer 2 is street addressing within a single neighbourhood. Everyone has a house number (MAC). To deliver to a neighbour, you use their house number directly. ARP is shouting down the street: "who lives at number 42?" — and anyone can answer, including someone who should not.',
+ attacks:[
+   {n:'ARP Spoofing / Poisoning',d:'An attacker sends fake ARP replies claiming their MAC belongs to another IP — typically the default gateway. Victims redirect all outbound traffic through the attacker. Classic Layer 2 man-in-the-middle.',t:'arpspoof, Bettercap, Ettercap'},
+   {n:'MAC Flooding',d:'Flooding a switch with frames from thousands of fake MACs, exhausting the CAM table. The switch degrades to hub behaviour — broadcasting all traffic out every port.',t:'macof (dsniff suite)'},
+   {n:'MAC Spoofing',d:'Changing your interface's MAC to impersonate another device. Used to bypass MAC-based access control lists or re-associate with a network enforcing MAC filtering.',t:'ip link set dev eth0 address XX:XX:XX:XX:XX:XX'},
+   {n:'VLAN Hopping',d:'Exploiting misconfigured trunk ports to send traffic into VLANs the attacker should not access. Double-tagging embeds a second 802.1Q tag — stripped by the first switch, read by the second.',t:'Scapy, Yersinia'}
+ ],
+ practical:[
+   {s:'View your ARP cache — all IP-to-MAC mappings learned.',c:'arp -a'},
+   {s:'Modern equivalent.',c:'ip neigh show'},
+   {s:'Temporarily spoof your MAC address.',c:'ip link set eth0 down
+ip link set eth0 address 02:00:00:00:00:01
+ip link set eth0 up
+ip link show eth0'},
+   {s:'Wireshark — filter ARP only.',c:'# Wireshark display filter:
+arp'},
+   {s:'Send manual ARP requests.',c:'arping -c 3 192.168.1.1'},
+   {s:'ARP sweep to find live hosts at Layer 2.',c:'nmap -PR -sn 192.168.1.0/24
+# -PR = ARP ping, -sn = no port scan'}
+ ],
+ quiz:[
+   {q:'What does ARP resolve?',
+    o:['Domain name to IP address','IP address to MAC address','Port number to service name','MAC address back to IP'],a:1,
+    ex:'ARP maps a known IP address to an unknown MAC address. A host cannot build an Ethernet frame without knowing the destination MAC. It broadcasts "who has IP x.x.x.x?" and the owner replies with its MAC.',
+    oe:['Domain-to-IP is DNS at Layer 7.','Correct. ARP answers: "I have this IP — what MAC address owns it?"','Port-to-service mapping is a Layer 4/7 concern.','Reverse ARP (RARP) maps MAC to IP — a separate obsolete protocol.']},
+   {q:'Which attack floods a switch's CAM table to force hub-like broadcast behaviour?',
+    o:['ARP spoofing','VLAN hopping','MAC flooding','IP spoofing'],a:2,
+    ex:'MAC flooding fills the CAM table with fake MAC addresses. The switch fails open — broadcasting all frames everywhere like a hub. The attacker in promiscuous mode reads all segment traffic.',
+    oe:['ARP spoofing poisons ARP caches — the CAM table is unaffected.','VLAN hopping crosses VLAN boundaries via trunk port misconfiguration.','Correct. Thousands of fake MACs exhaust the switch's memory, causing hub-like broadcast behaviour.','IP spoofing forges source IP at Layer 3 — unrelated to the CAM table.']},
+   {q:'How many bits is a standard Ethernet MAC address?',
+    o:['32 bits','64 bits','48 bits','128 bits'],a:2,
+    ex:'A MAC address is 48 bits — 6 groups of 2 hex digits (AA:BB:CC:DD:EE:FF). The first 24 bits are the OUI (manufacturer identifier); the last 24 bits are assigned by the manufacturer. IPv4 = 32 bits; IPv6 = 128 bits.',
+    oe:['32 bits is the size of an IPv4 address.','64 bits is not a standard network address size.','Correct. 48 bits written as 6 octets in hexadecimal.','128 bits is the size of an IPv6 address.']},
+   {q:'A switch makes forwarding decisions based on which identifier?',
+    o:['IP address','Port number','Domain name','MAC address'],a:3,
+    ex:'Switches are Layer 2 devices. They read the destination MAC in each frame and look it up in their CAM table to determine which port to forward to. They are unaware of IP addresses, port numbers, or domain names.',
+    oe:['IP addresses are used by Layer 3 routers.','Port numbers are a Layer 4 concept.','Domain names are Layer 7 — switches have no DNS awareness.','Correct. The CAM table maps MAC addresses to switch ports.']},
+   {q:'What is a gratuitous ARP?',
+    o:['An ARP request broadcast to discover all hosts','An ARP reply sent without a prior request — used to announce a mapping and exploited in poisoning','An encrypted ARP exchange between trusted hosts','A rate-limited ARP to prevent flooding'],a:1,
+    ex:'A gratuitous ARP is an unsolicited ARP reply — the sender announces its own IP-to-MAC mapping proactively. Legitimate uses include updating caches after a MAC change. Attackers use gratuitous ARPs to poison caches without waiting for a request.',
+    oe:['A broadcast to discover all hosts would be a scan, not a gratuitous ARP.','Correct. An unsolicited reply that updates caches — both legitimately and maliciously.','ARP has no encryption mechanism.','ARP has no built-in rate limiting.']},
+   {q:'What does promiscuous mode do on a network interface?',
+    o:['Accepts only broadcast frames','Encrypts all outgoing frames','Accepts all frames on the segment regardless of destination MAC','A power-saving mode reducing NIC processing'],a:2,
+    ex:'By default a NIC discards frames not addressed to it. In promiscuous mode it captures every frame it physically receives, regardless of destination MAC. Wireshark enables this automatically. On a hub or ARP-poisoned network it allows full passive sniffing.',
+    oe:['Accepting only broadcast frames is normal behaviour, not promiscuous mode.','Encryption is Layer 6 — the NIC hardware does not encrypt.','Correct. Promiscuous mode disables MAC filtering, capturing all frames on the segment.','Promiscuous mode increases CPU load by processing all frames, not reducing it.']},
+   {q:'What does Spanning Tree Protocol (STP) prevent?',
+    o:['MAC address spoofing on switch ports','ARP poisoning across VLANs','Switching loops and broadcast storms from redundant links','Unauthorised device connections to switch ports'],a:2,
+    ex:'Without STP, redundant links form switching loops — frames circulate endlessly, exponentially multiplying as each switch rebroadcasts them. This broadcast storm consumes all bandwidth. STP elects a root bridge and blocks redundant paths to prevent loops.',
+    oe:['MAC spoofing prevention is port security on managed switches, not STP.','ARP poisoning across VLANs is a separate attack — STP does not address it.','Correct. STP prevents broadcast storms caused by loops in redundant switched topologies.','Unauthorised devices are addressed by 802.1X port authentication, not STP.']},
+   {q:'In a VLAN hopping double-tagging attack, what does the attacker embed?',
+    o:['A forged MAC address in the Ethernet header','A fake ARP reply inside the payload','A second 802.1Q VLAN tag that survives the first switch','An IP header claiming to originate from the target VLAN'],a:2,
+    ex:'The attacker crafts a frame with two 802.1Q tags. The outer tag matches the attacker's native VLAN and is stripped by the first switch. The inner tag — the target VLAN — is then read by the second switch, forwarding the frame into the target VLAN.',
+    oe:['MAC addresses are in the Ethernet header but are not the mechanism of VLAN hopping.','ARP replies are Layer 3 resolution tools — not related to 802.1Q tagging.','Correct. A second 802.1Q tag survives the first switch and routes the frame into the target VLAN.','IP headers are Layer 3 — VLAN hopping exploits Layer 2 tagging.']},
+   {q:'The first 24 bits of a MAC address identify what?',
+    o:['The device type (workstation, server, printer)','The VLAN the device is assigned to','The geographic region of manufacture','The manufacturer, via the OUI assigned by the IEEE'],a:3,
+    ex:'A MAC address is 48 bits split into two 24-bit halves. The first 24 bits are the OUI (Organisationally Unique Identifier), assigned by the IEEE to identify the manufacturer. The last 24 bits are device-specific. Looking up an OUI reveals the vendor — useful in recon.',
+    oe:['Device type is not encoded in the MAC address.','VLAN assignment is a switch configuration — not in the MAC address.','Geographic region is not encoded in MACs — only the manufacturer OUI.','Correct. The first 24 bits are the OUI — the manufacturer identifier assigned by the IEEE.']}
+ ]},
+
+{id:3,name:'Network',protocols:'IP · ICMP · Routing · nmap',
+ ov:['The Network layer introduces logical addressing and routing — moving packets across multiple networks toward a destination potentially thousands of hops away. IP addresses are hierarchical and logical, enabling scalable routing decisions.',
+     'IPv4 addresses are 32-bit values written as four decimal octets. Every packet contains source IP, destination IP, and a TTL decremented at each hop to prevent infinite loops.',
+     'ICMP is the diagnostic protocol of Layer 3, used for ping and traceroute. Routers are the defining Layer 3 devices — they read IP headers and forward packets one hop at a time.'],
+ analogy:'Layer 3 is the postal system at national scale. A MAC is your house number — meaningful only on your street. An IP is your full postal address. Routers are sorting offices. A parcel from London to Tokyo passes through many offices, each reading only the destination postcode and forwarding to the next.',
+ attacks:[
+   {n:'IP Spoofing',d:'Forging the source IP in a packet header. TCP connections are hard to sustain because replies go to the real IP. UDP-based attacks use spoofing extensively — in DDoS amplification, spoofed requests flood the real victim through open resolvers.',t:'Scapy, hping3 -a <spoofed-ip>'},
+   {n:'ICMP Attacks',d:'Ping of Death sends oversized ICMP packets to crash systems. Smurf attacks broadcast spoofed ICMP requests. ICMP tunnelling hides C2 traffic inside ping packets to bypass firewalls.',t:'hping3, icmpsh, ptunnel'},
+   {n:'Layer 3 Reconnaissance',d:'nmap ping sweeps identify live hosts. traceroute maps topology by exploiting TTL expiry. OS fingerprinting analyses TTL values and IP header patterns to infer target OS.',t:'nmap -sn, traceroute, hping3'},
+   {n:'Route Poisoning',d:'Injecting false routing information into dynamic routing protocols (RIP, OSPF, BGP) to redirect traffic through attacker-controlled infrastructure.',t:'Scapy, routing protocol tooling'}
+ ],
+ practical:[
+   {s:'View your IP address and subnet.',c:'ip addr show
+# inet = your IPv4 address and prefix length'},
+   {s:'View your routing table.',c:'ip route show'},
+   {s:'Trace the path packets take to a destination.',c:'traceroute google.com'},
+   {s:'Ping sweep — identify live hosts on your subnet.',c:'nmap -sn 192.168.1.0/24'},
+   {s:'Capture ICMP traffic while pinging. Observe TTL values.',c:'# Terminal:
+ping -c 5 8.8.8.8
+# Wireshark filter:
+icmp'},
+   {s:'Craft a custom ICMP packet with hping3.',c:'hping3 -1 -c 3 --ttl 64 google.com
+# -1 = ICMP mode'}
+ ],
+ quiz:[
+   {q:'Which protocol is used to test Layer 3 connectivity between two hosts?',
+    o:['ARP','TCP','ICMP','UDP'],a:2,
+    ex:'ICMP carries echo request and echo reply messages — the mechanism behind ping. It is embedded in IP packets with no ports. ARP is Layer 2. TCP and UDP are Layer 4 transport protocols.',
+    oe:['ARP resolves IP-to-MAC at Layer 2 — not a Layer 3 connectivity test.','TCP is Layer 4 and requires a full handshake.','Correct. ICMP echo request and reply (ping) is the standard Layer 3 connectivity test.','UDP is Layer 4 — connectionless but still above Layer 3.']},
+   {q:'What field in an IP packet is decremented by 1 at each router hop to prevent infinite loops?',
+    o:['Checksum','Sequence number','Fragment offset','TTL'],a:3,
+    ex:'TTL (Time To Live) starts at a sender-set value (typically 64 or 128) and is decremented at each router. When TTL reaches zero, the router drops the packet and sends an ICMP Time Exceeded message back. traceroute exploits this by sending packets with incrementing TTL values to map each hop.',
+    oe:['Checksum verifies packet integrity — not related to loop prevention.','Sequence number is a TCP concept — not in IP headers.','Fragment offset indicates where a fragment fits in reassembly — not loop prevention.','Correct. TTL decrements at every hop and prevents packets from circulating forever.']},
+   {q:'Why is IP spoofing most effective in attacks using UDP rather than TCP?',
+    o:['UDP packets are larger and harder to trace','UDP requires no reply from the spoofed address to function','TCP packets are always encrypted in transit','UDP automatically routes responses to the victim'],a:1,
+    ex:'TCP requires a three-way handshake — the SYN-ACK goes to the spoofed source IP which the attacker cannot receive. The handshake cannot complete. UDP has no handshake — a spoofed UDP packet is sent, the service responds to the victim, and the attack functions without the attacker receiving anything.',
+    oe:['Packet size is irrelevant to spoofing effectiveness.','Correct. UDP fire-and-forget means no reply is needed — the attack functions without receiving any response.','TCP is not encrypted by default — TLS is a separate Layer 6 protocol.','Response routing is determined by the spoofed source IP — nothing is automatic.']},
+   {q:'Which command reveals every router hop between your machine and a destination?',
+    o:['nmap','ping','arp -a','traceroute'],a:3,
+    ex:'traceroute sends packets with incrementally increasing TTL values. Each router that decrements TTL to zero sends back an ICMP Time Exceeded message revealing its IP. The result maps every hop. ping only tests end-to-end reachability. arp -a shows Layer 2 cache.',
+    oe:['nmap is primarily a port scanner — not designed for hop-by-hop path tracing.','ping tests end-to-end reachability only — no intermediate hops revealed.','arp -a shows your local ARP cache of Layer 2 MAC-to-IP mappings.','Correct. traceroute maps every router hop using ICMP TTL expiry responses.']},
+   {q:'What is the IPv4 loopback address?',
+    o:['192.168.0.1','10.0.0.1','0.0.0.0','127.0.0.1'],a:3,
+    ex:'127.0.0.1 is the loopback address — traffic sent here never leaves the machine. Used for testing local services and inter-process communication. The entire 127.0.0.0/8 range is reserved for loopback. If a web service listens on 127.0.0.1, it is only reachable locally — a common SSRF target.',
+    oe:['192.168.0.1 is a common private LAN gateway, not a loopback.','10.0.0.1 is a private range address used as a gateway, not loopback.','0.0.0.0 means "any interface" or "unspecified" — not the loopback.','Correct. 127.0.0.1 is the loopback — traffic sent here stays on the local machine.']},
+   {q:'What does the nmap -O flag do?',
+    o:['Opens all closed ports','Detects the target operating system and version','Performs an aggressive scan with all scripts','Only scans the top 1000 open ports'],a:1,
+    ex:'nmap -O sends specially crafted probes and analyses responses — TTL values, TCP window sizes, IP ID patterns. Different OSes implement TCP/IP slightly differently, creating a fingerprint nmap compares against its database to guess the OS and version.',
+    oe:['nmap cannot open closed ports.','Correct. nmap -O fingerprints the target OS by analysing TCP/IP implementation differences.','Aggressive scanning is nmap -A, combining -O, -sV, scripts, and traceroute.','Limiting to 1000 ports is the default behaviour — no flag needed.']},
+   {q:'What is the purpose of a subnet mask?',
+    o:['To encrypt traffic between network segments','To automatically assign IP addresses to hosts','To determine which bits of an IP address identify the network vs the host','To prevent routing loops in large networks'],a:2,
+    ex:'A subnet mask (e.g. 255.255.255.0 or /24) is ANDed with an IP address to determine the network portion. Bits where the mask is 1 are network bits; bits where 0 are host bits. Subnetting divides large networks into smaller segments for efficiency and security.',
+    oe:['Traffic encryption is TLS (Layer 6) — subnet masks are Layer 3 addressing tools.','Automatic IP assignment is DHCP — subnet masks are one parameter DHCP provides.','Correct. A subnet mask separates the network portion from the host portion of an IP address.','Routing loop prevention is STP (L2) or routing protocol mechanisms (L3) — not subnet masks.']},
+   {q:'What does NAT primarily do?',
+    o:['Assigns IPv6 addresses to IPv4 devices','Encrypts all traffic between LAN and internet','Validates source IPs to prevent spoofing','Translates private IP addresses to a public IP for outbound internet traffic'],a:3,
+    ex:'NAT allows many devices with private IPs (10.x.x.x, 192.168.x.x) to share a single public IP for internet access. The router rewrites the source IP on outgoing packets and reverses this on incoming replies.',
+    oe:['IPv6-to-IPv4 translation is NAT64 — a specific variant, not NAT's primary purpose.','Traffic encryption is TLS (Layer 6) — NAT rewrites addresses but does not encrypt.','IP spoofing prevention is a separate problem — NAT does not validate source addresses.','Correct. NAT translates private IPs to a public IP so LAN devices can access the internet.']},
+   {q:'What ICMP type number represents an echo request (ping)?',
+    o:['Type 0','Type 3','Type 11','Type 8'],a:3,
+    ex:'ICMP type numbers: 8 = Echo Request (ping sends this), 0 = Echo Reply (target sends back), 3 = Destination Unreachable, 11 = Time Exceeded (routers send when TTL expires — used by traceroute). Essential for writing Wireshark filters.',
+    oe:['Type 0 is Echo Reply — the response sent back to a ping request.','Type 3 is Destination Unreachable — sent when a packet cannot be delivered.','Type 11 is Time Exceeded — sent by routers when TTL reaches zero.','Correct. Type 8 is Echo Request — what the ping command sends out.']}
+ ]},
+
+{id:4,name:'Transport',protocols:'TCP · UDP · Ports · Handshake',
+ ov:['The Transport layer provides end-to-end communication and introduces port numbers. Port 22 = SSH, 80 = HTTP, 443 = HTTPS, 3306 = MySQL. Well-known services use ports 0–1023.',
+     'TCP is connection-oriented and reliable. The three-way handshake must complete before data flows: SYN → SYN-ACK → ACK. Every segment is acknowledged; lost segments retransmitted; order preserved.',
+     'UDP has no handshake, no acknowledgement, no ordering. It fires and forgets — appropriate for DNS, VoIP, streaming, and gaming.'],
+ analogy:'TCP is a signed delivery service. The recipient signs for it and you get confirmation. If lost, it is resent. UDP is pushing a leaflet through a letterbox. Fast, no confirmation. If it blows away, that is acceptable.',
+ attacks:[
+   {n:'SYN Flood',d:'The attacker sends thousands of SYN packets but never completes the handshake. The server allocates state for each half-open connection. Eventually the connection table fills and new connections are refused. Mitigated by SYN cookies.',t:'hping3 -S --flood -p 80 <target>'},
+   {n:'Port Scanning',d:'Probing a target's ports to identify running services. SYN scan: SYN-ACK = open, RST = closed, no response = filtered. Foundational recon before any web or service enumeration.',t:'nmap -sS, nmap -sT, nmap -sU, nmap -sV'},
+   {n:'UDP Amplification DDoS',d:'Small spoofed UDP requests to open services return disproportionately large responses — DNS (60x), NTP (556x), memcached (51,000x). The spoofed victim IP receives the flood.',t:'Study for defence only'},
+   {n:'TCP Sequence Prediction',d:'If an attacker can observe or predict TCP sequence numbers, they can inject forged segments or terminate sessions with crafted RST packets.',t:'hping3, Scapy'}
+ ],
+ practical:[
+   {s:'Full TCP connect scan — completes the handshake.',c:'nmap -sT -p 22,80,443,3306 <target-ip>'},
+   {s:'SYN scan (stealth) — does not complete the handshake.',c:'sudo nmap -sS -p 1-1000 <target-ip>'},
+   {s:'UDP scan — reveals DNS, SNMP, NTP services.',c:'sudo nmap -sU -p 53,161,123 <target-ip>'},
+   {s:'View all ports your machine is listening on.',c:'ss -tulnp
+# t=TCP u=UDP l=listening n=numeric p=process'},
+   {s:'Manual TCP connection test with netcat.',c:'nc -zv 192.168.1.1 80
+# -z = scan only, -v = verbose'},
+   {s:'Wireshark — observe the TCP three-way handshake.',c:'# Display filter:
+tcp.flags.syn == 1
+# Follow stream: tcp.stream eq 0',n:'Look at each TCP segment Flags field. SYN=1 ACK=0 is the initial request. SYN=1 ACK=1 is the server reply. SYN=0 ACK=1 completes the handshake.'}
+ ],
+ quiz:[
+   {q:'What is the correct sequence of the TCP three-way handshake?',
+    o:['ACK → SYN → FIN','SYN → SYN-ACK → ACK','SYN → ACK → RST','PSH → ACK → SYN'],a:1,
+    ex:'(1) Client sends SYN to request a connection. (2) Server responds SYN-ACK. (3) Client sends ACK confirming the server's SYN. Only then does data flow.',
+    oe:['ACK then SYN is backwards — you cannot acknowledge before requesting.','Correct. SYN → SYN-ACK → ACK establishes a reliable TCP session.','SYN → ACK → RST would immediately reset the connection.','PSH is a data urgency flag — nothing to do with connection establishment.']},
+   {q:'A SYN flood attack primarily exhausts which server resource?',
+    o:['Hard disk storage','CPU cache','TCP connection state table','DNS resolver cache'],a:2,
+    ex:'Each SYN causes the server to allocate a Transmission Control Block (TCB) in memory for the half-open connection. The SYN flood fills this finite table. SYN cookies solve this by deferring state allocation until the handshake completes.',
+    oe:['SYN flood targets connection state memory, not disk storage.','CPU cache exhaustion is a different class of attack.','Correct. The TCP connection state table is the finite resource that SYN flood exhausts.','DNS cache is a separate subsystem — unrelated to TCP connection state.']},
+   {q:'Which protocol has no handshake, no acknowledgement, and no delivery guarantee?',
+    o:['TCP','SSH','FTP','UDP'],a:3,
+    ex:'UDP is deliberately minimal. No connection setup, no acknowledgement, no retransmission, no ordering. This makes it faster for DNS queries, live streaming, VoIP, gaming. TCP, SSH, and FTP all use TCP's reliable mechanism.',
+    oe:['TCP has a handshake, acknowledgements, retransmission, and ordering.','SSH uses TCP as transport and inherits all its reliability guarantees.','FTP uses TCP for both control (port 21) and data (port 20) channels.','Correct. UDP has no handshake or delivery guarantee — it sends datagrams and moves on.']},
+   {q:'What do port numbers identify at Layer 4?',
+    o:['A specific host on the network','A specific application or service on a host','The MAC address of the destination NIC','The routing path the packet will take'],a:1,
+    ex:'An IP address identifies the host. A port number identifies the specific application on that host. Port 80 = HTTP, port 22 = SSH, port 443 = HTTPS. Together (IP + port) form a socket — a unique communication endpoint.',
+    oe:['Hosts are identified by IP addresses (Layer 3).','Correct. Ports identify which application on a host should receive the data.','MAC addresses are Layer 2 identifiers, unrelated to port numbers.','Routing decisions are made at Layer 3 based on IP addresses, not ports.']},
+   {q:'Which port does HTTPS use by default?',
+    o:['80','22','443','8080'],a:2,
+    ex:'HTTPS (HTTP over TLS) runs on port 443. Port 80 is HTTP. Port 22 is SSH. Port 8080 is an alternative HTTP port often used for development. Finding port 443 open during recon signals a web server with TLS — a rich attack surface.',
+    oe:['Port 80 is HTTP — unencrypted web traffic.','Port 22 is SSH — encrypted remote shell access.','Correct. HTTPS uses port 443. Always inspect the certificate when this port is open.','Port 8080 is a common alternative HTTP port, not the default for HTTPS.']},
+   {q:'What does the TCP RST flag do?',
+    o:['Requests a new connection like SYN','Marks payload data as urgent','Initiates a graceful four-way connection teardown','Immediately terminates a connection — used on closed ports and in RST injection'],a:3,
+    ex:'RST immediately terminates a TCP connection without the graceful FIN-ACK sequence. It is used when a port is closed (RST in response to SYN), an application crashes, or the connection is invalid. Attackers craft RST packets to forcibly terminate established sessions.',
+    oe:['SYN requests a connection — RST terminates one; opposite functions.','URG is the urgent flag marking data as high priority — not RST.','Graceful teardown uses FIN in a four-way exchange — not RST.','Correct. RST immediately aborts a connection with no graceful handshake.']},
+   {q:'What does nmap -sV do?',
+    o:['Performs a SYN stealth scan','Detects the service name and version on open ports','Scans all 65535 ports','Enables verbose output'],a:1,
+    ex:'nmap -sV probes open ports and identifies the exact service and version. Instead of just knowing port 80 is open, you learn it is Apache 2.4.51. Version information is critical — it lets you search CVE databases for known exploits.',
+    oe:['SYN stealth scan is nmap -sS.','Correct. nmap -sV identifies service names and version numbers on open ports.','Scanning all ports requires nmap -p-.','Verbose output is nmap -v.']},
+   {q:'Ports 0–1023 are known as what?',
+    o:['Registered ports','Ephemeral ports','Dynamic ports','Well-known ports'],a:3,
+    ex:'IANA divides ports into three ranges: 0–1023 = Well-Known Ports (HTTP=80, HTTPS=443, SSH=22, DNS=53). 1024–49151 = Registered Ports. 49152–65535 = Dynamic/Ephemeral Ports used by clients.',
+    oe:['Registered ports are 1024–49151.','Ephemeral ports are the dynamic range (49152+) used by clients for outbound connections.','Dynamic ports is another name for ephemeral ports (49152+).','Correct. Ports 0–1023 are Well-Known Ports, reserved for standard protocols by IANA.']},
+   {q:'What is a TCP null scan (nmap -sN)?',
+    o:['Sends only the ACK flag to test for stateful firewalls','Sends a FIN packet to test each port','Sets all TCP flags simultaneously','Sends a packet with no flags set — closed ports reply RST, open ports do not respond'],a:3,
+    ex:'In a null scan every TCP flag bit is set to 0. Per RFC 793, a closed port must reply with RST; an open port should not respond. This allows port enumeration without sending a SYN, potentially bypassing firewalls watching for SYN packets. Works on Unix/Linux; Windows typically sends RST regardless.',
+    oe:['Sending only ACK is an ACK scan (nmap -sA) to map firewall rules.','Sending FIN is a FIN scan (nmap -sF) — a related but distinct technique.','Setting all flags simultaneously is an Xmas scan (nmap -sX).','Correct. A null scan sends zero flags, exploiting RFC 793 to infer port state.']}
+ ]},
+
+{id:5,name:'Session',protocols:'NetBIOS · RPC · Sessions · Cookies',
+ ov:['The Session layer manages sessions — the logical persistent connections between two applications. It establishes, maintains, and terminates sessions, and provides synchronisation checkpoints for long transfers.',
+     'In practice Layer 5 is the least distinct. Many implementations fold its functions into Layer 7. Explicit Layer 5 protocols include NetBIOS, RPC, PPTP, and SIP.',
+     'HTTP is stateless. Sessions are constructed artificially using cookies, localStorage tokens, or URL parameters. If an attacker obtains your session ID, the server considers them to be you.'],
+ analogy:'A telephone call. Layer 5 is the dialling, the ringing, the initial hello, the turn-taking during conversation, and the goodbye ending the call. The words spoken belong to upper layers. Without Layer 5, communication is isolated utterances with no thread connecting them.',
+ attacks:[
+   {n:'Session Hijacking',d:'Stealing a valid session token to impersonate an authenticated user. Vectors include XSS, network interception on unencrypted connections, and predictable session IDs.',t:'Burp Suite, browser DevTools, Wireshark on HTTP'},
+   {n:'Session Fixation',d:'The attacker plants a known session ID before the victim authenticates. When the victim logs in, the server elevates that session to authenticated. The attacker uses the same ID, already in their possession.',t:'Manual HTTP manipulation, Burp Suite'},
+   {n:'Null Sessions (SMB)',d:'Older Windows systems permitted anonymous SMB connections to IPC$. These could enumerate usernames, group memberships, password policies, and shares without credentials.',t:'enum4linux, smbclient -N, rpcclient -U ""'}
+ ],
+ practical:[
+   {s:'View all established TCP sessions.',c:'ss -tn state established'},
+   {s:'Older equivalent.',c:'netstat -an | grep ESTABLISHED'},
+   {s:'Enumerate SMB shares on a Windows target.',c:'enum4linux -a <target-ip>
+smbclient -L //<target-ip>/ -N'},
+   {s:'Observe TCP session teardown in Wireshark.',c:'# Display filter:
+tcp.flags.fin == 1'},
+   {s:'Inspect session cookies and their security flags.',c:'# DevTools (F12) → Application → Cookies
+# Check: HttpOnly, Secure, SameSite',n:'Missing HttpOnly = stealable via XSS. Missing Secure = transmits over HTTP. Missing SameSite = vulnerable to CSRF.'}
+ ],
+ quiz:[
+   {q:'Which protocol operates at Layer 5 for Windows network naming and session management?',
+    o:['HTTP','DNS','NetBIOS','SMTP'],a:2,
+    ex:'NetBIOS is a Layer 5 protocol used in Windows networks for name resolution and session-layer communication. HTTP is Layer 7 (web). DNS is Layer 7 (name resolution). SMTP is Layer 7 (email).',
+    oe:['HTTP is a Layer 7 application protocol for web communication.','DNS resolves domain names to IPs and operates at Layer 7.','Correct. NetBIOS handles Windows network names and session establishment at Layer 5.','SMTP is the Layer 7 protocol for sending email.']},
+   {q:'What distinguishes session fixation from session hijacking?',
+    o:['Fixation is Layer 3; hijacking is Layer 7','Fixation plants a known session ID before authentication; hijacking steals one after','Fixation requires physical access to the target','They are identical attacks with different names'],a:1,
+    ex:'Session hijacking steals an existing authenticated token — attack after login. Session fixation plants a known token before login — the attacker controls the ID and waits for the victim to authenticate with it.',
+    oe:['Both attacks involve HTTP session tokens — neither is Layer 3.','Correct. Fixation is pre-authentication (attacker sets the ID); hijacking is post-authentication (attacker steals it).','Session fixation is an HTTP-level attack — no physical access required.','They are distinct attacks with different timing and mechanisms.']},
+   {q:'How do web applications typically maintain state across stateless HTTP requests?',
+    o:['MAC addresses embedded in headers','IP addresses stored server-side','Cookies or session tokens','Port numbers reserved per user'],a:2,
+    ex:'HTTP is stateless by design. The server issues a session token (via Set-Cookie) after login. The client includes this token in every subsequent request. The server looks it up and identifies the user.',
+    oe:['MAC addresses are Layer 2 — not visible beyond the local network, not in HTTP headers.','IP addresses can change (NAT, mobile) and are not reliable session identifiers.','Correct. A session cookie or token is returned after authentication and sent with every subsequent request.','Port numbers identify services, not individual users.']},
+   {q:'What can be extracted through a null SMB session on an unpatched Windows host?',
+    o:['TLS cipher suites','Usernames, group memberships, and password policies','TCP sequence numbers','ARP cache entries'],a:1,
+    ex:'Windows historically allowed anonymous connections to IPC$ via SMB. Through this unauthenticated connection, an attacker could enumerate local users, group memberships, shares, and account policies including password complexity requirements.',
+    oe:['TLS cipher suites are enumerated with nmap ssl-enum-ciphers — not via SMB.','Correct. Null sessions expose user accounts, groups, shares, and password policies without credentials.','TCP sequence numbers are Layer 4 transport details — not exposed via SMB.','ARP cache entries are Layer 2 — not accessible through an SMB null session.']},
+   {q:'What does the HttpOnly cookie flag do?',
+    o:['Prevents the cookie from being sent over HTTP','Prevents JavaScript from reading or modifying the cookie','Makes the cookie expire when the browser closes','Prevents the cookie from being sent to third-party domains'],a:1,
+    ex:'HttpOnly tells the browser: this cookie must not be accessible via JavaScript. document.cookie returns nothing for HttpOnly cookies. This directly prevents the most common XSS payload — stealing session tokens via document.cookie.',
+    oe:['Requiring HTTPS is the Secure flag, not HttpOnly.','Correct. HttpOnly blocks JavaScript access to the cookie, directly mitigating session theft via XSS.','Session-only lifetime is controlled by omitting an expiry date from Set-Cookie.','Restricting cross-site sending is the SameSite attribute, not HttpOnly.']},
+   {q:'What does the Secure cookie flag enforce?',
+    o:['Encrypts the contents of the cookie','Only sends the cookie on same-origin requests','Transmits the cookie only over HTTPS connections','Signs the cookie to prevent tampering'],a:2,
+    ex:'The Secure flag tells the browser to only transmit this cookie over HTTPS. If the user navigates to the HTTP version of a site, the Secure cookie will not be sent. Essential for any authenticated session.',
+    oe:['The Secure flag does not encrypt cookie contents — it restricts the transport protocol.','Same-origin restriction is the SameSite attribute, not Secure.','Correct. Secure means the cookie is only transmitted over HTTPS, never HTTP.','Cookie signing is not a browser-native feature — it requires server-side implementation.']},
+   {q:'What does the SameSite=Strict cookie attribute do?',
+    o:['Requires the cookie to match the exact URL path','Prevents JavaScript from accessing the cookie','Restricts the cookie to HTTPS only','Only sends the cookie when the request originates from the same site — directly mitigating CSRF'],a:3,
+    ex:'SameSite=Strict: only send this cookie when the request originates from this exact domain. Cross-site requests will not include it. This directly mitigates CSRF — the forged request from the attacker's domain will not carry the session cookie.',
+    oe:['URL path matching is not a cookie attribute.','Blocking JavaScript access is the HttpOnly attribute.','Restricting to HTTPS is the Secure attribute.','Correct. SameSite=Strict prevents the cookie from being sent with any cross-site request, mitigating CSRF.']},
+   {q:'What is the default SMB port on modern Windows systems?',
+    o:['139','137','445','3389'],a:2,
+    ex:'SMB uses port 445 for direct SMB over TCP, introduced with Windows 2000. Older NetBIOS-based SMB used ports 137, 138, and 139. Port 3389 is RDP. A target with port 445 open is almost certainly Windows — check for EternalBlue (MS17-010).',
+    oe:['Port 139 is the older NetBIOS Session Service — used by legacy SMB.','Port 137 is NetBIOS Name Service — for name resolution, not active SMB sessions.','Correct. Port 445 is direct SMB over TCP — the primary SMB port on modern Windows.','Port 3389 is Remote Desktop Protocol (RDP) — a completely separate service.']},
+   {q:'What is the most critical security property a session token must have?',
+    o:['Length — longer is always more secure','A short server-side expiry time','Whether stored in a cookie or localStorage','Unpredictability — generated from a cryptographically secure random source with sufficient entropy'],a:3,
+    ex:'If session tokens are predictable — sequential numbers, timestamps, or short random values — an attacker can guess valid tokens without stealing them. A secure token needs sufficient entropy from a CSPRNG. Length without randomness is meaningless — a long sequential counter is still predictable.',
+    oe:['Length alone is insufficient — a 256-character sequential counter is trivially predictable.','Short expiry limits window of exposure but does not prevent prediction of valid tokens.','Storage location affects XSS risk but not the fundamental randomness requirement.','Correct. A session token must be unpredictable. Sufficient entropy from a cryptographically secure source is the non-negotiable requirement.']}
+ ]},
+
+{id:6,name:'Presentation',protocols:'TLS/SSL · Encoding · Encryption',
+ ov:['The Presentation layer handles data formatting, translation, encryption, and compression. It ensures data from one application can be understood by another regardless of internal representation differences.',
+     'TLS spans Layers 4–7 in implementation, but its encryption and decryption functions belong at Layer 6. During the TLS handshake, client and server negotiate a cipher suite, exchange certificates, and derive a shared session key.',
+     'Encoding is not encryption. Base64 converts binary to printable ASCII — zero confidentiality. Attackers encode payloads to bypass input filters: %3Cscript%3E instead of \u003cscript\u003e, double encoding, Unicode escapes.'],
+ analogy:'A translator between two parties who speak different formats. The message stays identical — Layer 6 renders it in a form the recipient can process. TLS is the translator who insists the conversation happen in a soundproofed room. Without Layer 6, every connection would be in plaintext.',
+ attacks:[
+   {n:'SSL Stripping',d:'An attacker intercepts the HTTP request before the HTTPS redirect. The attacker maintains HTTP with the victim while proxying HTTPS to the server. HSTS prevents this by requiring browsers to refuse HTTP.',t:'sslstrip, Bettercap'},
+   {n:'Weak Cipher Suites',d:'Servers accepting deprecated encryption (RC4, DES, SSLv2/3) are vulnerable to decryption. BEAST, POODLE, and DROWN exploit these weaknesses. A TLS scan reveals negotiable cipher suites.',t:'nmap --script ssl-enum-ciphers, testssl.sh'},
+   {n:'Encoding-Based Filter Bypass',d:'WAFs inspect decoded input. URL-encoding, HTML-entity-encoding, double-encoding, or Unicode-escaping payloads can pass the WAF while the backend interprets the malicious payload.',t:'Burp Suite Decoder, manual crafting'},
+   {n:'Certificate-Based MitM',d:'Using forged or dynamically generated certificates to intercept TLS sessions. mitmproxy generates per-domain certificates signed by an attacker CA. Effective only if the victim trusts the attacker's root CA.',t:'mitmproxy, Burp Suite'}
+ ],
+ practical:[
+   {s:'Inspect TLS certificate and cipher suite for a live server.',c:'openssl s_client -connect google.com:443
+# Look for: Cipher, Certificate chain, Protocol version'},
+   {s:'Enumerate all cipher suites a server will negotiate.',c:'nmap --script ssl-enum-ciphers -p 443 <target>'},
+   {s:'Decode a Base64 string.',c:'echo "aGVsbG8gd29ybGQ=" | base64 -d'},
+   {s:'Encode a string to Base64.',c:'echo -n "hello world" | base64'},
+   {s:'URL-decode an encoded payload.',c:"python3 -c "import urllib.parse; print(urllib.parse.unquote('%3Cscript%3Ealert(1)%3C%2Fscript%3E'))""},
+   {s:'Scan for known SSL vulnerabilities.',c:'nmap --script ssl-heartbleed -p 443 <target>
+nmap --script ssl-poodle -p 443 <target>'}
+ ],
+ quiz:[
+   {q:'What does an SSL stripping attack accomplish?',
+    o:['Removes the server's TLS certificate from memory','Downgrades the connection from HTTPS to HTTP','Breaks the TLS handshake mid-session','Re-encrypts traffic with a weaker cipher'],a:1,
+    ex:'SSL stripping intercepts the initial HTTP request before it can redirect to HTTPS. The attacker proxies HTTPS to the server while maintaining plaintext HTTP with the victim. HSTS (Strict-Transport-Security) prevents this by requiring browsers to refuse HTTP for known domains.',
+    oe:['SSL stripping does not touch certificates — it intercepts before TLS begins.','Correct. The attacker maintains HTTP to the victim while proxying HTTPS to the server.','SSL stripping prevents TLS from being established on the victim side.','Cipher downgrade is BEAST/POODLE — SSL stripping removes encryption entirely.']},
+   {q:'Base64 encoding provides which security property?',
+    o:['Confidentiality — data cannot be read without a key','Authentication — proves the sender's identity','Neither — it is encoding only, not encryption','Integrity — detects if data was tampered with'],a:2,
+    ex:'Base64 is purely a text encoding scheme. It converts binary data to printable ASCII. Anyone can decode it instantly with no key. It provides zero confidentiality, zero authentication, and zero integrity. Confusing encoding with encryption is a common and serious mistake.',
+    oe:['Base64 provides zero confidentiality — anyone can decode it with no key.','Base64 proves nothing about the sender — authentication requires digital signatures.','Correct. Base64 is a representation change only — trivially reversible, no security property.','Integrity requires a cryptographic hash or HMAC — Base64 does not detect tampering.']},
+   {q:'Which HTTP response header instructs browsers to always use HTTPS, preventing SSL stripping?',
+    o:['X-Frame-Options','Content-Security-Policy','Strict-Transport-Security','X-XSS-Protection'],a:2,
+    ex:'HSTS (HTTP Strict Transport Security) tells the browser: for this domain, only connect over HTTPS — refuse HTTP entirely. Once received, the browser will not allow a downgrade. X-Frame-Options prevents clickjacking. CSP controls resource loading.',
+    oe:['X-Frame-Options prevents the page from being embedded in an iframe.','CSP controls which resources the browser may load — not transport protocol enforcement.','Correct. Strict-Transport-Security forces HTTPS and prevents any HTTP fallback.','X-XSS-Protection was a legacy browser XSS filter — now deprecated and unrelated to HTTPS.']},
+   {q:'Submitting %3Cscript%3E instead of \u003cscript\u003e to bypass a WAF is an example of?',
+    o:['SQL injection','Buffer overflow','URL encoding to exploit WAF decoding discrepancies','DNS cache poisoning'],a:2,
+    ex:'%3C encodes < and %3E encodes >. A WAF checking for the literal string \u003cscript\u003e sees %3Cscript%3E as safe. The backend decodes the URL and interprets \u003cscript\u003e. This decoding discrepancy between WAF and app is the vulnerability.',
+    oe:['SQL injection targets database queries — this targets input filters.','Buffer overflow overwrites memory — entirely different.','Correct. URL encoding exploits the difference between what the WAF sees and what the application executes.','DNS poisoning corrupts resolver caches — nothing to do with encoding.']},
+   {q:'What does "openssl s_client -connect hostname:443" do?',
+    o:['Generates a self-signed certificate','Connects to a server and displays its TLS certificate, cipher suite, and protocol version','Converts a certificate between PEM and DER formats','Tests whether a server is vulnerable to Heartbleed'],a:1,
+    ex:'openssl s_client -connect opens a raw TLS connection and dumps everything negotiated: certificate chain, selected cipher suite, protocol version, and session details. It is the fastest way to manually inspect what TLS a server presents.',
+    oe:['Generating a self-signed certificate uses openssl req — different command.','Correct. s_client opens a TLS connection and dumps all certificate and cipher negotiation details.','PEM/DER conversion uses openssl x509 with format flags.','Heartbleed testing has a specific nmap script — s_client does not test for it.']},
+   {q:'What is the key difference between symmetric and asymmetric encryption?',
+    o:['Symmetric uses two keys; asymmetric uses one','Symmetric uses one key for both encryption and decryption; asymmetric uses a public/private key pair','They are equivalent — the terms refer to key length only','Symmetric is for signatures; asymmetric is for bulk encryption'],a:1,
+    ex:'Symmetric (AES, ChaCha20): one key encrypts and the same key decrypts — fast but requires securely sharing the key. Asymmetric (RSA, ECC): a key pair where the public key encrypts and the private key decrypts. TLS uses asymmetric to exchange a symmetric session key, combining both advantages.',
+    oe:['Symmetric uses one key; asymmetric uses two — this option has them reversed.','Correct. Symmetric = one shared key. Asymmetric = public key encrypts, private key decrypts.','They are not equivalent — they have different structures, performance, and use cases.','Symmetric is used for bulk encryption (fast); asymmetric for key exchange and signatures.']},
+   {q:'What is a TLS cipher suite?',
+    o:['A list of supported TLS protocol versions','The combination of algorithms for key exchange, authentication, encryption, and integrity','The certificate format used by the server','The maximum key size the server will accept'],a:1,
+    ex:'A cipher suite is a named combination of four algorithms: (1) key exchange (ECDHE, RSA), (2) authentication (RSA, ECDSA), (3) bulk encryption (AES-128-GCM, ChaCha20), (4) MAC/integrity (SHA256). Weak suites using RC4 or DES are exploitable.',
+    oe:['Protocol versions (TLS 1.2, 1.3) are separate from cipher suites.','Correct. A cipher suite specifies key exchange, authentication, encryption, and integrity algorithms.','Certificate format (PEM, DER) is separate from cipher suites.','Maximum key size is not what a cipher suite defines.']},
+   {q:'What does double URL encoding mean?',
+    o:['Applying Base64 then URL encoding in sequence','Encoding using two different schemes simultaneously','URL-encoding the percent sign itself — so %3C becomes %253C','Using Unicode instead of ASCII in parameters'],a:2,
+    ex:'Standard URL encoding: < becomes %3C. Double encoding then encodes the % sign itself (%25), turning %3C into %253C. A WAF decoding once sees %3C as safe. The backend decodes again and sees <. This second pass bypasses the WAF.',
+    oe:['Base64 then URL encoding is a different chained technique.','Double encoding refers to encoding the same scheme twice, not two different schemes.','Correct. The percent sign is encoded to %25, so %3C becomes %253C — surviving one WAF decode pass.','Unicode encoding uses \u escapes or HTML entities — a different bypass technique.']},
+   {q:'What does PEM format store?',
+    o:['Binary-encoded certificate data with no text wrapper','Encrypted private keys only','Certificates and private keys encoded as Base64 text between BEGIN/END headers','A compressed archive of the certificate chain'],a:2,
+    ex:'PEM stores cryptographic objects — certificates, private keys, CSRs — as Base64-encoded data wrapped between -----BEGIN ... ----- and -----END ... ----- headers. It is the most common format for TLS certificates on web servers.',
+    oe:['Binary-encoded format is DER — PEM wraps DER in Base64 with text headers.','PEM can store both certificates and private keys, not keys only.','Correct. PEM is Base64-encoded data with BEGIN/END text headers — human-readable and widely supported.','PEM is a single-file text format, not an archive.']}
+ ]},
+
+{id:7,name:'Application',protocols:'HTTP · DNS · FTP · SMTP · SSH',
+ ov:['The Application layer is where users and software interact with the network. It provides HTTP/HTTPS for the web, DNS for name resolution, FTP for file transfer, SMTP/IMAP for email, SSH for secure remote access. This is the primary attack surface for web security.',
+     'HTTP is stateless and text-based. Each request-response pair is independent. HTTP defines methods (GET, POST, PUT, DELETE, PATCH), status codes (200, 301, 401, 403, 500), and headers carrying metadata.',
+     'DNS translates domain names to IP addresses. Every URL visit triggers a DNS query first. Resolution chain: local cache → recursive resolver → root nameservers → TLD nameservers → authoritative nameservers. Compromising any step redirects traffic invisibly.'],
+ analogy:'Layer 7 is the actual letter inside the envelope. All lower layers existed solely to deliver this. When you type a URL and press Enter: L1 transmits the signal, L2 frames it, L3 routes it, L4 manages TCP, L5 maintains the session, L6 encrypts with TLS — and L7 is what you asked for.',
+ attacks:[
+   {n:'SQL Injection',d:'User input embedded in a database query without sanitisation. Injecting SQL syntax — quotes, OR 1=1, UNION SELECT — can bypass authentication, extract entire databases, or execute OS commands.',t:'sqlmap, Burp Suite, manual testing, DVWA'},
+   {n:'Cross-Site Scripting (XSS)',d:'Malicious JavaScript injected into a page and executed in other users' browsers. Reflected XSS fires on a single manipulated request. Stored XSS persists in the database and executes for every visitor.',t:'OWASP WebGoat, Burp Suite, DVWA'},
+   {n:'DNS Poisoning',d:'Corrupting a DNS resolver's cache to return false IP addresses. Clients are silently redirected to attacker infrastructure. DNSSEC mitigates this with cryptographic signing.',t:'dnsspoof, Bettercap'},
+   {n:'Directory Traversal',d:'Using path traversal sequences (../../etc/passwd) in file path parameters to access files outside the web root. Exposes configuration files, private keys, and credential stores.',t:'Burp Suite, manual testing'},
+   {n:'CSRF (Cross-Site Request Forgery)',d:'Tricking an authenticated user's browser into sending a request to a target application. Browsers automatically include session cookies, making the forged request indistinguishable from a legitimate one.',t:'Burp Suite CSRF PoC generator'}
+ ],
+ practical:[
+   {s:'Send an HTTP request and inspect all headers.',c:'curl -v http://example.com
+# -v = verbose: shows request + response headers'},
+   {s:'Send a request with custom headers.',c:'curl -H "X-Forwarded-For: 127.0.0.1" \
+     -H "Host: internal.target.com" \
+     http://target.com'},
+   {s:'Query DNS records.',c:'dig google.com A
+dig google.com MX
+dig google.com TXT'},
+   {s:'Reverse DNS lookup.',c:'dig -x 8.8.8.8'},
+   {s:'Attempt a DNS zone transfer.',c:'dig axfr @ns1.target.com target.com
+# Replace with the target's actual nameserver'},
+   {s:'Directory brute force.',c:'gobuster dir \
+  -u http://<target> \
+  -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt \
+  -t 50',n:'Run only against your own lab, DVWA, or a CTF machine. Never against systems without permission.'}
+ ],
+ quiz:[
+   {q:'SQL injection is possible when user input is embedded in a query without what?',
+    o:['User authentication','Parameterisation and input sanitisation','HTTPS encryption','Rate limiting'],a:1,
+    ex:'SQLi occurs because user input is concatenated directly into a SQL query and interpreted as SQL syntax. Parameterised queries fix this by separating query structure from data — user input is never executed as SQL.',
+    oe:['Authentication confirms identity — it does not prevent SQLi if the query still concatenates input.','Correct. Parameterised queries ensure user data is never interpreted as SQL syntax.','HTTPS encrypts the connection — the SQLi payload still reaches and executes on the database.','Rate limiting slows brute-force attacks but does not prevent a single crafted payload.']},
+   {q:'DNS operates on which port by default?',
+    o:['443','80','22','53'],a:3,
+    ex:'Port 53 is reserved for DNS — UDP for standard queries, TCP for zone transfers and large responses. An open port 53 on a non-DNS server is suspicious. Zone transfers on TCP 53 reveal all DNS records for a domain — a common CTF misconfiguration.',
+    oe:['Port 443 is HTTPS.','Port 80 is HTTP.','Port 22 is SSH.','Correct. DNS uses port 53 — UDP for queries, TCP for zone transfers.']},
+   {q:'What is the key difference between stored and reflected XSS?',
+    o:['Stored XSS only affects the attacker's browser','Stored XSS persists in the database and executes for every visitor; reflected fires only for the person clicking the malicious link','Reflected XSS requires the victim to be authenticated','They are the same vulnerability with different names'],a:1,
+    ex:'Reflected XSS: payload is in the URL, reflected in the response, affects only whoever clicks the crafted link. Stored XSS: payload is saved in the database and executes in every visitor's browser — potentially thousands of victims from one injection.',
+    oe:['Stored XSS affects all visitors to the page — not just the attacker.','Correct. Stored XSS is persistent and affects all visitors. Reflected XSS requires tricking each victim individually.','Reflected XSS does not require authentication.','They are mechanically distinct: one persists in storage, one is reflected in the response.']},
+   {q:'CSRF is effective because browsers automatically include what with requests to a target site?',
+    o:['The victim's IP address in a header','Session cookies for that domain','A CORS preflight header','The browser's user-agent string'],a:1,
+    ex:'Browsers automatically attach all cookies for a domain to every request — regardless of which site triggered it. A CSRF attack embeds a request to the target in a malicious page. The victim's browser sends it with the session cookie. CSRF tokens prevent this.',
+    oe:['IP addresses are not automatically added to request headers by browsers.','Correct. Session cookies are automatically sent with every request to their domain.','CORS preflight is a browser mechanism for cross-origin security — not session authentication.','User-agent strings identify the browser — they do not authenticate the user.']},
+   {q:'What does the robots.txt file contain and why is it useful in recon?',
+    o:['Server software version information','A list of valid user accounts','Disallow rules that often reveal sensitive paths the admin does not want indexed','A list of installed application plugins'],a:2,
+    ex:'robots.txt instructs crawlers which paths not to index. It is publicly readable at /robots.txt. Administrators often put sensitive paths there — /admin, /backup, /internal — paths not indexed but not actually restricted. robots.txt is a free map of interesting targets.',
+    oe:['Server version information may appear in HTTP headers but not in robots.txt.','User account enumeration is done through other means.','Correct. Disallow entries frequently reveal admin panels, backup paths, and API endpoints.','Plugin lists are not in robots.txt.']},
+   {q:'What does HTTP status code 403 mean?',
+    o:['The resource was not found','The server encountered an internal error','The request requires authentication credentials','The server understood the request but refuses access — the resource exists'],a:3,
+    ex:'401 = Unauthorised (no valid credentials). 403 = Forbidden (resource exists but access denied). In bug bounty, a 403 is more interesting than a 404: the resource exists and finding a bypass is a valid finding.',
+    oe:['Resource not found is 404 — 403 means the resource exists but access is denied.','Internal server error is 500 — a different status class.','Requiring authentication is 401 — 403 means the server recognises you but still refuses.','Correct. 403 Forbidden means the resource exists but access is denied.']},
+   {q:'What does the Content-Security-Policy (CSP) header do?',
+    o:['Encrypts all resources sent to the browser','Forces the browser to always use HTTPS','Restricts which resources the browser may load, mitigating XSS and data injection','Prevents cross-origin requests from reading the response'],a:2,
+    ex:'CSP tells the browser: only load scripts from these domains, block all inline JavaScript. It is a defence-in-depth measure against XSS — even if an attacker injects a script tag, the browser refuses to execute it if the source is not whitelisted. A missing or weak CSP is reportable in bug bounty.',
+    oe:['Encrypting resources is TLS (Layer 6) — CSP is a resource loading policy.','Forcing HTTPS is HSTS (Strict-Transport-Security) — not CSP.','Correct. CSP restricts which resources the browser may load, directly mitigating XSS.','Cross-origin response access is controlled by CORS headers — not CSP.']},
+   {q:'What do gobuster and ffuf primarily do in web security testing?',
+    o:['Crack password hashes','Fuzz HTTP parameters for SQL injection','Enumerate directories and files on a web server using a wordlist','Perform DNS brute-forcing to find subdomains'],a:2,
+    ex:'gobuster and ffuf send HTTP requests for each word in a wordlist appended to the target URL — /admin, /backup, /.git — looking for 200, 301, or 403 responses. Finding /admin returning 403 is more valuable than 404 — the resource is real.',
+    oe:['Password hash cracking is hashcat or john.','SQL injection fuzzing is done with sqlmap or Burp Suite Intruder.','Correct. gobuster and ffuf brute-force web server paths to discover hidden directories and files.','DNS subdomain brute-forcing is a separate use case — gobuster has a DNS mode but it is not the primary function.']},
+   {q:'What is an IDOR vulnerability?',
+    o:['Injecting malicious code into a database query','Cross-site request forgery using a victim's session','Accessing another user's data by manipulating object references in requests','Directory traversal using ../ sequences'],a:2,
+    ex:'IDOR (Insecure Direct Object Reference) occurs when an application uses user-controllable values to reference objects without verifying authorisation. Changing ?id=1001 to ?id=1002 and receiving another user's record is IDOR. Extremely common in bug bounties — simple to find, high impact.',
+    oe:['Injecting malicious code into queries is SQL injection.','CSRF tricks a browser into making unintended requests — IDOR is about accessing unauthorised data directly.','Correct. IDOR is accessing other users' data by manipulating identifiers the server fails to validate.','Directory traversal uses ../ sequences to escape the web root — a different vulnerability.']}
+ ]}
+];
+
+const FINAL_QUIZ=[
+  {q:'Which Layer 1 device broadcasts every signal out of every port with no filtering?',layer:'L1',
+   o:['Switch','Router','Hub','Bridge'],a:2,
+   ex:'A hub is a pure Layer 1 device with no address awareness. It retransmits every signal received on every port. Switches (L2) read MAC addresses, routers (L3) read IP addresses, bridges (L2) connect segments intelligently.',
+   oe:['Switches read MAC addresses and forward to the correct port only.','Routers read IP addresses and make Layer 3 forwarding decisions.','Correct. Hubs blindly retransmit every signal out every port with no filtering.','Bridges are Layer 2 devices that connect segments with MAC-level intelligence.']},
+  {q:'Attenuation in networking describes?',layer:'L1',
+   o:['Electromagnetic interference from nearby cables','The degradation of signal strength over distance','Collision of signals on a shared medium','Data loss due to packet corruption'],a:1,
+   ex:'Attenuation is the loss of signal energy as it travels through a medium. Every cable has a maximum length (100m for Cat5e) beyond which the signal degrades too much. Repeaters combat attenuation by regenerating the signal.',
+   oe:['EMI is interference from external sources — attenuation is specifically distance-based signal loss.','Correct. Attenuation is signal strength degradation over distance.','Signal collisions happen on shared media — not what attenuation describes.','Packet corruption is a data integrity issue — attenuation is a physical signal phenomenon.']},
+  {q:'ARP resolves which type of mapping?',layer:'L2',
+   o:['Domain name to IP','MAC address to IP','IP address to MAC address','Port number to service'],a:2,
+   ex:'ARP maps a known IP address to an unknown MAC address. A host cannot build an Ethernet frame without knowing the destination MAC. It broadcasts "who has IP x.x.x.x?" and the owner replies with its MAC.',
+   oe:['Domain-to-IP is DNS at Layer 7.','Reverse ARP (RARP) maps MAC to IP — ARP is the other direction.','Correct. ARP resolves an IP address to a MAC address.','Port-to-service mapping is a Layer 4/7 concept.']},
+  {q:'MAC flooding exhausts which switch resource?',layer:'L2',
+   o:['The routing table','The CAM table','The ARP cache','The STP root bridge table'],a:1,
+   ex:'A switch's CAM table maps MAC addresses to physical ports. MAC flooding fills this table with fake MAC addresses, leaving no room for legitimate entries. The switch fails open and broadcasts all frames everywhere like a hub.',
+   oe:['The routing table is a Layer 3 router construct.','Correct. The CAM table is the switch's MAC-to-port database — flooding it causes hub-like behaviour.','The ARP cache is maintained per-host, not by the switch.','STP tables track root bridge election — not the target of MAC flooding.']},
+  {q:'ICMP type 8 represents which message?',layer:'L3',
+   o:['Destination Unreachable','Time Exceeded','Echo Reply','Echo Request'],a:3,
+   ex:'ICMP type numbers: 8 = Echo Request (ping sends this), 0 = Echo Reply, 3 = Destination Unreachable, 11 = Time Exceeded (sent by routers when TTL expires, used by traceroute).',
+   oe:['Destination Unreachable is ICMP Type 3.','Time Exceeded is ICMP Type 11 — used by traceroute.','Echo Reply is ICMP Type 0 — the response sent back.','Correct. Type 8 is Echo Request — what the ping command sends out.']},
+  {q:'A subnet mask determines?',layer:'L3',
+   o:['Which traffic to encrypt between segments','How IP addresses are automatically assigned','Which bits of an IP address identify the network vs the host','The maximum number of routers on a network'],a:2,
+   ex:'A subnet mask (e.g. 255.255.255.0 or /24) is ANDed with an IP address to determine which bits are the network portion and which are the host portion. Subnetting divides large address spaces into smaller segments.',
+   oe:['Traffic encryption is TLS (Layer 6) — subnet masks are Layer 3 addressing tools.','Automatic IP assignment is DHCP.','Correct. A subnet mask separates the network bits from the host bits in an IP address.','Router limits are not defined by subnet masks.']},
+  {q:'The TCP three-way handshake sequence is?',layer:'L4',
+   o:['SYN → ACK → SYN-ACK','ACK → SYN → FIN','SYN → SYN-ACK → ACK','FIN → FIN-ACK → ACK'],a:2,
+   ex:'(1) Client sends SYN. (2) Server responds SYN-ACK. (3) Client sends ACK. Only after all three does data flow. Understanding this is essential for port scanning and SYN flood attacks.',
+   oe:['SYN then ACK then SYN-ACK is out of order.','ACK then SYN makes no sense — you cannot acknowledge before requesting.','Correct. SYN → SYN-ACK → ACK establishes a reliable TCP connection.','FIN sequence describes connection teardown, not establishment.']},
+  {q:'A SYN flood attack exhausts which server resource?',layer:'L4',
+   o:['CPU processing cycles','Hard disk space','The TCP connection state table','The DNS resolver cache'],a:2,
+   ex:'Each SYN causes the server to allocate a Transmission Control Block in memory for the half-open connection. The SYN flood fills this finite table. SYN cookies solve this by deferring state allocation until the handshake completes.',
+   oe:['SYN flood targets connection state memory, not CPU cycles.','Disk space is irrelevant to TCP connection handling.','Correct. The TCP connection state table is the finite resource that SYN flood exhausts.','DNS cache is unrelated to TCP connection state.']},
+  {q:'What does the HttpOnly cookie flag prevent?',layer:'L5',
+   o:['Sending the cookie over HTTP (requires HTTPS)','JavaScript from reading or modifying the cookie','The cookie from being sent to third-party domains','The cookie from persisting after the browser closes'],a:1,
+   ex:'HttpOnly tells the browser: this cookie must not be accessible via JavaScript. document.cookie returns nothing for HttpOnly cookies. This directly prevents the most common XSS payload — stealing session tokens via document.cookie.',
+   oe:['Requiring HTTPS for the cookie is the Secure flag, not HttpOnly.','Correct. HttpOnly blocks JavaScript access to the cookie, mitigating session theft via XSS.','Cross-site sending is controlled by the SameSite attribute.','Session-only lifetime is controlled by omitting an expiry date from Set-Cookie.']},
+  {q:'Session fixation differs from session hijacking because?',layer:'L5',
+   o:['Fixation targets Layer 3; hijacking targets Layer 7','Fixation plants a known session ID before authentication; hijacking steals one post-authentication','Fixation requires network access; hijacking requires physical access','They are identical attacks described differently'],a:1,
+   ex:'Session hijacking steals an existing authenticated token — attack after login. Session fixation plants a known token before login — the attacker holds the ID and waits for the victim to authenticate.',
+   oe:['Both attacks operate at the HTTP session layer — not Layer 3.','Correct. Fixation is pre-authentication; hijacking is post-authentication.','Neither attack requires physical access.','They are distinct attacks with different timing and mechanisms.']},
+  {q:'SSL stripping works by?',layer:'L6',
+   o:['Breaking the TLS handshake mid-session','Intercepting HTTP before redirect to HTTPS, maintaining plaintext to the victim','Replacing TLS 1.3 with TLS 1.0','Removing the server's certificate from responses'],a:1,
+   ex:'SSL stripping intercepts the initial HTTP request before it can redirect to HTTPS. The attacker maintains unencrypted HTTP with the victim while proxying HTTPS to the server. HSTS prevents this by instructing browsers to refuse HTTP.',
+   oe:['Breaking a TLS handshake mid-session describes a different attack class.','Correct. SSL stripping prevents the HTTPS redirect — the victim communicates in plaintext.','Downgrading TLS versions is POODLE/BEAST — SSL stripping removes encryption entirely.','Certificate removal is not what SSL stripping does.']},
+  {q:'Base64 encoding provides which security guarantee?',layer:'L6',
+   o:['Confidentiality — only recipients with the key can decode','Data integrity — detects if content was modified','Authentication — proves who encoded the data','None — it is a representation change with no security property'],a:3,
+   ex:'Base64 is purely a text encoding scheme converting binary to printable ASCII. Anyone can decode it with standard library functions and no key. It provides zero confidentiality, zero integrity, and zero authentication.',
+   oe:['Base64 provides zero confidentiality — no key is needed to decode it.','Base64 provides no integrity check.','Base64 provides no authentication.','Correct. Base64 is a representation change only. No security property whatsoever.']},
+  {q:'SQL injection is prevented primarily by?',layer:'L7',
+   o:['User authentication before database access','Parameterised queries and input sanitisation','HTTPS encryption on the database connection','Rate limiting on login endpoints'],a:1,
+   ex:'SQLi occurs because user input is concatenated into SQL query strings. Parameterised queries fix this by separating query structure from data — user input is never executed as SQL syntax.',
+   oe:['Authentication confirms identity — if the query still concatenates input, SQLi is still possible.','Correct. Parameterised queries ensure user data is never interpreted as SQL syntax.','HTTPS encrypts the connection — the SQLi payload still executes on the database.','Rate limiting slows brute-force attacks but does not prevent a single crafted payload.']},
+  {q:'DNS operates on which port?',layer:'L7',
+   o:['443','80','22','53'],a:3,
+   ex:'Port 53 is reserved for DNS — UDP for standard queries, TCP for zone transfers and large responses. An open port 53 on a non-DNS server is suspicious.',
+   oe:['Port 443 is HTTPS.','Port 80 is HTTP.','Port 22 is SSH.','Correct. DNS uses port 53 — UDP for queries, TCP for zone transfers.']},
+  {q:'An IDOR vulnerability allows an attacker to?',layer:'L7',
+   o:['Inject SQL into a database query','Execute JavaScript in another user's browser','Access another user's data by manipulating object references','Bypass HTTPS by stripping TLS'],a:2,
+   ex:'IDOR (Insecure Direct Object Reference) occurs when an application uses user-controllable values to reference objects without verifying authorisation. Changing ?id=1001 to ?id=1002 and receiving another user's record is IDOR. Very common in bug bounties.',
+   oe:['Injecting SQL into queries is SQL injection.','Executing JavaScript in another's browser is XSS.','Correct. IDOR is accessing unauthorised data by manipulating identifiers the server fails to validate.','Bypassing HTTPS is SSL stripping — a Layer 6 attack.']},
+  {q:'What does promiscuous mode on a NIC allow?',layer:'L2',
+   o:['Encrypts all outgoing traffic automatically','Captures all frames on the segment regardless of destination MAC','Prevents other hosts from seeing the NIC's traffic','Filters traffic by IP address before Layer 3 processing'],a:1,
+   ex:'By default a NIC discards frames not addressed to it. In promiscuous mode it captures every frame it physically receives regardless of destination MAC. Wireshark enables promiscuous mode automatically.',
+   oe:['Encryption is Layer 6 — NICs do not encrypt traffic automatically.','Correct. Promiscuous mode disables MAC filtering, allowing capture of all frames on the segment.','Hiding your traffic requires encryption, not promiscuous mode.','IP-level filtering is Layer 3 performed by the OS, not a NIC mode.']},
+  {q:'traceroute reveals information by exploiting which IP field?',layer:'L3',
+   o:['Checksum','Fragment offset','Source IP','TTL'],a:3,
+   ex:'traceroute sends packets with incrementally increasing TTL values. Each router decrements TTL by 1; when it reaches 0, the router drops the packet and sends an ICMP Time Exceeded message back revealing its IP address.',
+   oe:['Checksum is for error detection — traceroute does not exploit it.','Fragment offset is used in packet reassembly — not related to traceroute.','Source IP is used in spoofing attacks — traceroute uses legitimate source IPs to receive replies.','Correct. traceroute exploits the TTL field, mapping each hop by triggering ICMP Time Exceeded responses.']},
+  {q:'The SameSite=Strict cookie attribute prevents?',layer:'L5',
+   o:['JavaScript from reading the cookie','The cookie from being sent over HTTP','The cookie from being sent with cross-site requests','The cookie from being stored after the browser closes'],a:2,
+   ex:'SameSite=Strict: only send this cookie when the request originates from the same domain. Cross-site requests will not include it. This directly mitigates CSRF — the forged request from the attacker's domain will not carry the session cookie.',
+   oe:['Blocking JavaScript from reading the cookie is the HttpOnly flag.','Restricting to HTTPS is the Secure flag.','Correct. SameSite=Strict prevents the cookie from being sent with any cross-site request, mitigating CSRF.','Cookie persistence is controlled by the expiry date in Set-Cookie.']},
+  {q:'Which nmap flag detects service names and versions on open ports?',layer:'L4',
+   o:['-sS','-sN','-sV','-O'],a:2,
+   ex:'nmap -sV (version detection) probes open ports and identifies the exact service and version. Instead of just knowing port 80 is open, you learn it is Apache 2.4.51. This feeds directly into CVE searches. -sS is SYN scan, -sN is null scan, -O is OS fingerprinting.',
+   oe:['-sS is a SYN stealth scan — it detects port state, not service versions.','-sN is a null scan — it sends packets with no flags to infer port state.','Correct. -sV performs service and version detection on open ports.','-O performs OS fingerprinting based on TCP/IP stack characteristics.']},
+  {q:'CSRF is effective because browsers automatically do what?',layer:'L7',
+   o:['Add the victim's IP to every request header','Send cookies for a domain with every request to that domain','Perform CORS preflight checks on all requests','Embed the referrer URL in every HTTP request'],a:1,
+   ex:'Browsers automatically attach all cookies for a domain to every request regardless of which site triggered it. A CSRF attack embeds a request to the target in a malicious page. The victim's browser sends it with the session cookie. CSRF tokens break this by requiring an unpredictable form value.',
+   oe:['IP addresses are not automatically added to request headers by browsers.','Correct. Session cookies are automatically sent with every request to their domain.','CORS preflight is for cross-origin resource access, not session authentication.','Referrer headers are not always included and are easily spoofed.']}
+];
+
+function ds(){const r={c:{},sc:{},ll:null,fc:false,fsc:null};LAYERS.forEach(l=>{r.c[l.id]=false;r.sc[l.id]=null;});return r;}
+let S=(()=>{try{const s=localStorage.getItem('osi_v4');return s?JSON.parse(s):ds();}catch{return ds();}})();
+function save(){localStorage.setItem('osi_v4',JSON.stringify(S));}
+
+let curL=null,curT='overview';
+
+function buildNav(){
+  const nav=document.getElementById('layer-nav');
+  nav.innerHTML='';
+  const hb=document.createElement('button');
+  hb.className='lbtn'+(curL===null?' active':'');
+  hb.innerHTML='<span class="ln">&nbsp;</span><span class="lname">Overview</span>';
+  hb.onclick=()=>showHome();
+  nav.appendChild(hb);
+  LAYERS.forEach(l=>{
+    const b=document.createElement('button');
+    b.className='lbtn'+(S.c[l.id]?' done':'')+(curL===l.id?' active':'');
+    b.innerHTML=`<span class="ln">L${l.id}</span><span class="lname">${l.name}</span>`;
+    b.onclick=()=>showLayer(l.id);
+    nav.appendChild(b);
+  });
+  const fb=document.createElement('button');
+  fb.className='lbtn final-btn'+(S.fc?' done':'')+(curL==='final'?' active':'');
+  fb.innerHTML='<span class="ln">★</span><span class="lname">Final</span>';
+  fb.onclick=()=>showFinal();
+  nav.appendChild(fb);
+  document.getElementById('tp-done').textContent=LAYERS.filter(l=>S.c[l.id]).length;
+}
+
+function showHome(){
+  curL=null;curT='overview';buildNav();
+  const done=LAYERS.filter(l=>S.c[l.id]).length;
+  const pct=Math.round(done/LAYERS.length*100);
+  document.getElementById('main-content').innerHTML=`
+    <div class="home-hdr">
+      <h1>OSI Model</h1>
+      <p>Seven layers. Each covers theory, analogy, attack surface, and terminal exercises. Nine quiz questions per layer with per-answer explanations. Complete all seven, then take the combined final exam.</p>
+      <div class="prow"><div class="bar-o"><div class="bar-i" style="width:${pct}%"></div></div><div class="blabel"><span>${done}</span>/7 layers done</div></div>
+    </div>
+    <div class="hgrid">
+      ${LAYERS.map(l=>`
+        <div class="hcard${S.c[l.id]?' done':''}" onclick="showLayer(${l.id})">
+          <div class="hcnum">${l.id}</div>
+          <div class="hcbody"><h3>${l.name}</h3><p>${l.protocols}</p></div>
+          <div class="hcstat">${S.c[l.id]?'done ✓':'→'}</div>
+        </div>`).join('')}
+      <div class="hcard final${S.fc?' done':''}" onclick="showFinal()">
+        <div class="hcnum">★</div>
+        <div class="hcbody"><h3>Final Exam</h3><p>${FINAL_QUIZ.length} questions · all layers combined</p></div>
+        <div class="hcstat">${S.fc?'done ✓':'→'}</div>
+      </div>
+    </div>`;
+}
+
+function showLayer(id,tab){
+  curL=parseInt(id);curT=tab||'overview';S.ll=curL;save();buildNav();renderLayer();
+}
+
+function renderLayer(){
+  const l=LAYERS.find(x=>x.id===curL);if(!l)return;
+  const idx=LAYERS.indexOf(l),prev=LAYERS[idx-1]||null,next=LAYERS[idx+1]||null;
+  const tabs=['overview','security','practical','quiz'];
+  const tl={overview:'Overview',security:'Security',practical:'Practical',quiz:`Quiz (${l.quiz.length})`};
+  document.getElementById('main-content').innerHTML=`
+    <div class="layer-hdr">
+      <div class="lnum">${l.id}</div>
+      <div class="ltitle"><h2>${l.name}</h2><div class="lsub">${l.protocols}</div></div>
+    </div>
+    <div class="tab-strip">${tabs.map(t=>`<button class="tbtn${curT===t?' active':''}" onclick="switchTab('${t}')">${tl[t]}</button>`).join('')}</div>
+    <div id="tc"></div>
+    <div class="navfoot">
+      <button class="btn" onclick="${prev?`showLayer(${prev.id})`:'showHome()'}" style="min-width:76px">← ${prev?prev.name:'Overview'}</button>
+      ${next?`<button class="btn btn-amber" onclick="showLayer(${next.id})" style="min-width:76px">${next.name} →</button>`:`<button class="btn btn-amber" onclick="showFinal()" style="min-width:76px">Final Exam →</button>`}
+    </div>`;
+  renderTab(l);
+}
+
+function switchTab(t){
+  curT=t;
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase().startsWith(t)));
+  renderTab(LAYERS.find(x=>x.id===curL));
+}
+
+function renderTab(l){
+  const el=document.getElementById('tc');if(!el)return;
+  if(curT==='overview') el.innerHTML=`
+    <div class="prose-blk"><span class="slabel">Theory</span><div class="prose">${l.ov.map(p=>`<p>${p}</p>`).join('')}</div></div>
+    <div class="analogy-box"><span class="slabel">Analogy</span><div class="prose"><p>${l.analogy}</p></div></div>`;
+  else if(curT==='security') el.innerHTML=`
+    <span class="slabel">Attack surface — Layer ${l.id}</span>
+    ${l.attacks.map(a=>`<div class="acard"><div class="acard-name">${a.n}</div><div class="acard-desc">${a.d}</div><div class="acard-tool">tools: <span>${a.t}</span></div></div>`).join('')}`;
+  else if(curT==='practical') el.innerHTML=`
+    <span class="slabel">Terminal exercises — Layer ${l.id}</span>
+    ${l.practical.map((p,i)=>`<div class="step"><div class="step-n">Step ${i+1}</div><div class="step-d">${p.s}</div>${p.c?`<div class="cmd">${p.c}</div>`:''} ${p.n?`<div class="note"><strong>Note</strong> — ${p.n}</div>`:''}</div>`).join('')}
+    <div class="note"><strong>Environment</strong> — Run on Kali Linux or any Debian-based system. Use your own lab or a CTF target only. Never test systems without explicit permission.</div>`;
+  else if(curT==='quiz') renderQuizSection(l.quiz,l.id,false);
+}
+
+let qa={},qs=false,quizCtx=null;
+
+function renderQuizSection(questions,ctx,isFinal){
+  qa={};qs=false;quizCtx={questions,ctx,isFinal};
+  const sc=isFinal?S.fsc:S.sc[ctx];
+  const total=questions.length;
+  const intro=isFinal
+    ?`${total} questions drawn from all seven layers. Each question is labelled with its layer. Per-answer explanations are revealed on submit.`
+    :`Layer ${ctx} — ${total} questions. Wrong answers show explanations on submit.`;
+  document.getElementById('tc').innerHTML=`
+    <div class="qintro">${intro}</div>
+    ${questions.map((q,qi)=>`
+      <div class="qblk" id="qb-${qi}">
+        ${isFinal&&q.layer?`<div class="layer-tag">${q.layer}</div>`:''}
+        <div class="qtxt"><span class="qnum">Q${qi+1} of ${total}</span>${q.q}</div>
+        <div class="opts">
+          ${q.o.map((o,oi)=>`
+            <div class="opt" id="o-${qi}-${oi}" onclick="selOpt(${qi},${oi})">
+              <span class="opt-lt">${['a','b','c','d'][oi]}</span>
+              <div><span>${o}</span><div class="opt-explain" id="oe-${qi}-${oi}">${q.oe[oi]}</div></div>
+            </div>`).join('')}
+        </div>
+        <div class="q-explain" id="qex-${qi}"><strong>Explanation</strong>${q.ex}</div>
+      </div>`).join('')}
+    <div class="qfoot">
+      <div class="sdisplay" id="sdis">${sc!==null?`last score: <span>${sc}/${total}</span>`:'&nbsp;'}</div>
+      <button class="btn btn-amber" id="sbtn" onclick="submitQuiz()">Submit answers</button>
+    </div>
+    <div class="cbanner${sc!==null?' show '+getBannerClass(sc,total):''}" id="cbanner">${sc!==null?getBannerText(ctx,sc,total,isFinal):''}</div>`;
+}
+
+function selOpt(qi,oi){
+  if(qs)return;
+  qa[qi]=oi;
+  quizCtx.questions.forEach((_,i)=>[0,1,2,3].forEach(j=>{
+    const el=document.getElementById(`o-${i}-${j}`);
+    if(el)el.classList.toggle('selected',i===qi&&j===oi);
+  }));
+}
+
+function submitQuiz(){
+  const{questions,ctx,isFinal}=quizCtx;
+  if(questions.some((_,i)=>qa[i]===undefined)){alert('Answer all '+questions.length+' questions before submitting.');return;}
+  qs=true;let sc=0;
+  questions.forEach((q,qi)=>{
+    const ch=qa[qi],cor=q.a;
+    [0,1,2,3].forEach(oi=>{
+      const el=document.getElementById(`o-${qi}-${oi}`);
+      const oe=document.getElementById(`oe-${qi}-${oi}`);
+      if(!el)return;
+      el.classList.remove('selected');
+      if(oi===cor){el.classList.add('correct');if(oe)oe.classList.add('show');}
+      else if(oi===ch&&ch!==cor){el.classList.add('wrong');if(oe)oe.classList.add('show');}
+    });
+    const exEl=document.getElementById(`qex-${qi}`);
+    if(exEl)exEl.classList.add('show');
+    if(ch===cor)sc++;
+  });
+  if(isFinal){S.fsc=sc;S.fc=true;}
+  else{S.sc[ctx]=sc;S.c[ctx]=true;}
+  save();
+  document.getElementById('sdis').innerHTML=`score: <span>${sc}/${questions.length}</span>`;
+  document.getElementById('sbtn').disabled=true;
+  const cb=document.getElementById('cbanner');
+  if(cb){cb.innerHTML=getBannerText(ctx,sc,questions.length,isFinal);cb.className='cbanner show '+getBannerClass(sc,questions.length);}
+  buildNav();
+}
+
+function getBannerClass(sc,total){
+  const p=sc/total;return p===1?'good':p>=0.66?'mid':'low';
+}
+function getBannerText(ctx,sc,total,isFinal){
+  const p=sc/total;
+  const label=isFinal?'Final exam':'Layer '+ctx;
+  const msg=p===1?'All correct.':p>=0.77?'Good. Review the explanations above for the ones you missed.':p>=0.55?'Review the explanations and retry.':'Go back through the theory and security tabs before retrying.';
+  return `${label} — ${sc}/${total}. ${msg}`;
+}
+
+function showFinal(){
+  curL='final';buildNav();
+  document.getElementById('main-content').innerHTML=`
+    <div class="final-hdr">
+      <h2>Combined Final Exam</h2>
+      <p>${FINAL_QUIZ.length} questions drawn from all seven layers. Each question shows its layer. Per-answer explanations are revealed on submit. No time limit.</p>
+    </div>
+    <div id="tc"></div>`;
+  renderQuizSection(FINAL_QUIZ,'final',true);
+}
+
+buildNav();showHome();
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
