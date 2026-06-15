@@ -2,7 +2,7 @@
 
 An offline-capable PWA covering all seven OSI layers from a security perspective.
 
-**Live:** https://your-username.github.io/osi-course
+**Live:** https://mnfmofficial.github.io/osi-course/
 
 ---
 
