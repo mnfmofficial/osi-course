@@ -26,7 +26,6 @@ Each layer includes four sections: theory, real-world analogy, attack surface, a
 
 - 9 questions per layer (63 total)
 - 20-question combined final exam
-- Every answer — correct and incorrect — shows an explanation on submit
 - Progress saved locally via localStorage
 
 ---
@@ -41,7 +40,7 @@ Works fully offline after first load.
 ## Run Locally
 
 ```bash
-git clone https://github.com/your-username/osi-course.git
+git clone https://github.com/mnfmofficial/osi-course.git
 cd osi-course
 python3 -m http.server 8080
 ```
